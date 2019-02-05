@@ -1,0 +1,27 @@
+{
+  "name": "dp_example",
+  "version": "1.0.0",
+  "description": "sls api example crud",
+  "main": "index.js",
+  "scripts": {
+    "start": "ENV=${ENV:=development}; ENV=$ENV sls dynamodb start && ENV=$ENV sls offline",
+    "deploy": "ENV=${ENV:=staging}; ENV=$ENV sls deploy",
+    "test": "yarn test"
+  },
+  "author": "fuko",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "7.2.2",
+    "@babel/preset-env": "7.3.1",
+    "aws-sdk": "2.396.0",
+    "babel-loader": "8.0.5",
+    "serverless-dynamodb-local": "0.2.30",
+    "serverless-offline": "4.2.1",
+    "serverless-webpack": "5.2.0",
+    "webpack": "4.29.1",
+    "webpack-node-externals": "1.7.2"
+  },
+  "dependencies": {
+    "@awspilot/dynamodb": "1.2.9"
+  }
+}

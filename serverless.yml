@@ -1,0 +1,104 @@
+
+service: sls-api-crud-example
+
+plugins:
+  - serverless-webpack
+  - serverless-dynamodb-local
+  - serverless-offline
+
+frameworkVersion: "=1.36.3"
+
+custom:
+  env: ${env:ENV, 'development'}
+  webpack:
+    includeModules: true
+    packager: 'yarn' 
+  serverless-offline:
+    port: 3000
+  dynamodb:
+    start:
+      port: 8000
+      migrate: true
+      convertEmptyValues: true
+  table_name: ${self:service}-${self:custom.env}-user
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  stage: ${self:custom.env}
+  region: eu-west-1
+  environment:
+    DB_USERS_TABLE_NAME: ${self:custom.table_name}
+  iamRoleStatements:
+  - Effect: Allow
+    Action:
+      - dynamodb:DescribeTable
+      - dynamodb:Query
+      - dynamodb:Scan
+      - dynamodb:GetItem
+      - dynamodb:PutItem
+      - dynamodb:UpdateItem
+      - dynamodb:DeleteItem
+    # Restrict our IAM role permissions to
+    # the specific table for the stage
+    Resource:
+        Fn::GetAtt:
+          - usersTable
+          - Arn
+
+functions:
+  create:
+    handler: handlers/create.handler
+    events:
+      - http:
+          path: api/create
+          method: post
+          cors: true
+  update:
+    handler: handlers/update.handler
+    events:
+      - http:
+          path: api/update
+          method: put
+          cors: true
+  delete:
+      handler: handlers/delete.handler
+      events:
+        - http:
+            path: api/delete
+            method: delete
+            cors: true
+  list:
+    handler: handlers/list.handler
+    events:
+      - http:
+          path: api/list
+          method: get
+          cors: true
+  get:
+    handler: handlers/get.handler
+    events:
+      - http:
+          path: api/get/{email}
+          method: get
+          cors: true
+          request: 
+          parameters: 
+             paths: 
+               email: true
+
+resources: 
+  Resources:
+    usersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.table_name}
+        AttributeDefinitions:
+          - AttributeName: email
+            AttributeType: S
+        KeySchema:
+          - AttributeName: email
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
